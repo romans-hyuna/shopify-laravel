@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Events\ShopifyAppInstalled;
 use App\Http\Requests\ShopifyRedirectRequest;
-use App\Jobs\GetShopInfo;
 use App\Services\ShopifyConnectService;
 use App\Services\ShopifyWebhookService;
 use Illuminate\Http\Request;
@@ -36,7 +35,7 @@ class ShopifyController extends Controller
         try {
             return $this->shopify_connect_service
                 ->scopes(['read_products'])
-                ->redirectToShopify($request->input('domain'));
+                ->redirectToShopify(str_replace('https://', '', $request->input('domain')));
         } catch (\Exception $e) {
             report($e);
             return redirect(route('index'))->withErrors('Error connect shopify.');
@@ -60,7 +59,6 @@ class ShopifyController extends Controller
             session()->put('token', $token->access_token);
 
             event(new ShopifyAppInstalled($request->input('shop')));
-            //GetShopInfo::dispatch($request->input('shop'));
 
             return redirect(route('index'))->with('success', 'App connected');
         } catch (\Exception $e) {
